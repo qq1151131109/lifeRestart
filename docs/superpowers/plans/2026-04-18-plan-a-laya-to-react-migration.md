@@ -97,7 +97,7 @@ pnpm add react@^18.3.1 react-dom@^18.3.1 zustand@^5.0.0 framer-motion@^11.11.0
 - [ ] **Step 2: 安装开发依赖**
 
 ```bash
-pnpm add -D typescript@^5.6.0 @types/react@^18.3.0 @types/react-dom@^18.3.0 @vitejs/plugin-react@^4.3.0 tailwindcss@^3.4.0 postcss@^8.4.0 autoprefixer@^10.4.0 @testing-library/react@^16.0.0 @testing-library/jest-dom@^6.5.0 happy-dom@^15.7.0
+pnpm add -D typescript@^5.6.0 @types/react@^18.3.0 @types/react-dom@^18.3.0 @vitejs/plugin-react@^6.0.0 tailwindcss@^3.4.0 postcss@^8.4.0 autoprefixer@^10.4.0 @testing-library/react@^16.0.0 @testing-library/jest-dom@^6.5.0 happy-dom@^15.7.0
 ```
 
 - [ ] **Step 3: 创建 src-next/tsconfig.json**
