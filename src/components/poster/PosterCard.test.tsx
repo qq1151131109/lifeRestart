@@ -26,7 +26,7 @@ describe('PosterCard', () => {
 
   it('renders overall judge from summary.SUM.judge', () => {
     render(<PosterCard summary={summary} talents={talents} dramaticEvent="23岁 · 事件" />)
-    expect(screen.getByText(/不佳/)).toBeInTheDocument()
+    expect(screen.getByText(/盛年\s*·\s*总评\s*不佳/)).toBeInTheDocument()
   })
 
   it('renders all six property dimensions', () => {

@@ -49,7 +49,7 @@ export function PosterCard({ summary, talents, dramaticEvent }: PosterCardProps)
       <div style={{ textAlign: 'center', marginBottom: '20px' }}>
         <div style={{ fontSize: '32px', fontWeight: 700, color: '#92400e' }}>享年 {age}岁</div>
         <div style={{ fontSize: '13px', color: '#a8956a', marginTop: '4px' }}>
-          总分 {sumEntry?.value ?? '?'}
+          {summary.HAGE ? (zh[summary.HAGE.judge] ?? summary.HAGE.judge) : ''} · 总评 {overallJudge}
         </div>
       </div>
 
