@@ -1,7 +1,12 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, afterEach } from 'vitest'
 import { configureLoader, loadDataSet } from './loader'
 
 describe('loader', () => {
+  afterEach(() => {
+    configureLoader({ baseUrl: '/data', language: 'zh-cn' })
+    vi.unstubAllGlobals()
+  })
+
   it('calls fetch with configured language path', async () => {
     const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ ok: true }) })
     vi.stubGlobal('fetch', fetchMock)
