@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
+import type { ReactNode } from 'react'
 
-export function LandscapeLockout({ children }: { children: React.ReactNode }) {
+export function LandscapeLockout({ children }: { children: ReactNode }) {
   const [isLandscape, setIsLandscape] = useState(false)
 
   useEffect(() => {
