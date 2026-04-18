@@ -112,3 +112,4 @@ __localStorage.json
 
 template/public
 public/data
+tests/fixtures/*.actual.txt

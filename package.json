@@ -14,7 +14,8 @@
         "build:next": "vite build --config src-next/vite.config.ts",
         "test:next": "vitest run --config src-next/vitest.config.ts",
         "test:next:watch": "vitest --config src-next/vitest.config.ts",
-        "repl:deterministic": "node repl/deterministic.js"
+        "repl:deterministic": "node repl/deterministic.js",
+        "test:repl": "vitest run tests/core-regression.test.js"
     },
     "devDependencies": {
         "@testing-library/jest-dom": "^6.5.0",
