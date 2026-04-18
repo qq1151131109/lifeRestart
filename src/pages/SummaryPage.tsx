@@ -24,15 +24,7 @@ export function SummaryPage() {
   const [eventIndex, setEventIndex] = useState(0)
 
   const ownedTalents = randomTalents.filter(t => selectedTalents.has(String(t.id)))
-
-  if (!life) return null
-
-  const summary = life.summary as LifeSummary
   const dramaticEvents = selectDramaticEvents(trajectoryLog)
-  const currentEvent = dramaticEvents[eventIndex]
-  const dramaticEventText = currentEvent
-    ? `${currentEvent.age}岁 · ${currentEvent.content.description}`
-    : `${summary.HAGE?.value ?? '?'}岁 · 一生平淡，却也真实。`
 
   const handleSharePoster = useCallback(async () => {
     setEventIndex(0)
@@ -55,6 +47,14 @@ export function SummaryPage() {
     setShowModal(false)
     clear()
   }, [clear])
+
+  if (!life) return null
+
+  const summary = life.summary as LifeSummary
+  const currentEvent = dramaticEvents[eventIndex]
+  const dramaticEventText = currentEvent
+    ? `${currentEvent.age}岁 · ${currentEvent.content.description}`
+    : `${summary.HAGE?.value ?? '?'}岁 · 一生平淡，却也真实。`
 
   return (
     <div className="flex-1 flex flex-col p-4">
