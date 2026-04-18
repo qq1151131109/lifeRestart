@@ -1,9 +1,9 @@
 import { render, screen } from '@testing-library/react'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, afterEach, vi } from 'vitest'
 import { LandscapeLockout } from './LandscapeLockout'
 
 function mockMatchMedia(matches: boolean) {
-  window.matchMedia = vi.fn().mockImplementation(() => ({
+  vi.stubGlobal('matchMedia', vi.fn().mockImplementation(() => ({
     matches,
     addEventListener: vi.fn(),
     removeEventListener: vi.fn(),
@@ -12,12 +12,12 @@ function mockMatchMedia(matches: boolean) {
     dispatchEvent: vi.fn(),
     media: '',
     onchange: null,
-  }))
+  })))
 }
 
 describe('LandscapeLockout', () => {
-  beforeEach(() => {
-    vi.restoreAllMocks()
+  afterEach(() => {
+    vi.unstubAllGlobals()
   })
 
   it('renders children when portrait', () => {
