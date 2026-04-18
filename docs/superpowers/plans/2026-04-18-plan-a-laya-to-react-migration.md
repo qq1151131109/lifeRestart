@@ -734,6 +734,7 @@ export const AchievementOpportunity = {
   START: 'START',
   END: 'END',
   TRAJECTORY: 'TRAJECTORY',
+  SUMMARY: 'SUMMARY',
 } as const
 
 export type AchievementOpportunityKey =
