@@ -25,10 +25,10 @@
 **天赋展示逻辑：** 取 `randomTalents` 中 id 在 `selectedTalents` 内的前 3 条，展示 name。
 
 **戏剧性事件选取逻辑：**
-1. 过滤 `trajectoryLog` 中 `result.type === 'EVT'` 的条目
-2. 按 grade 降序（SSSS > SSS > SS > S > A > B > C）取最高评级者作为默认
+1. 展开 `trajectoryLog` 中所有 `result.content` 条目，过滤 `type === 'EVT'` 的 `TrajectoryContent`（同时保留外层的 `age`）
+2. 按 grade 降序（SSSS > SSS > SS > S > A > B > C，grade 为 undefined 的排最后）取最高评级者作为默认
 3. 用户可在弹层内点击"换一条"循环切换候选事件列表
-4. 展示格式：`"[age]岁 · [event description]"`
+4. 展示格式：`"[age]岁 · [event.description]"`
 
 ## Components
 
@@ -40,9 +40,10 @@
 interface PosterCardProps {
   summary: Partial<Record<PropertyTypeKey, SummaryEntry>>;
   talents: TalentMeta[];        // 最多 3 条
-  dramaticEvent: string;        // 已格式化字符串
-  age: number;                  // 享年
-  overallGrade: string;         // 总评 grade 文字（如"普通"）
+  dramaticEvent: string;        // 已格式化字符串，如"23岁 · 你考上了重点大学"
+  // age 和 overallGrade 均从 summary 读取：
+  // age = summary.HAGE?.value
+  // overallGrade = summary.SUM?.judge
 }
 ```
 
@@ -111,7 +112,7 @@ pnpm add -D @types/html2canvas
 
 ## Error Handling
 
-- `html2canvas` 失败：按钮恢复可点击状态，toast 提示"海报生成失败，请重试"
+- `html2canvas` 失败：按钮恢复可点击状态，在按钮下方显示行内错误文字"海报生成失败，请重试"（项目无全局 toast，不引入新依赖）
 - 无事件可选（`trajectoryLog` 全为天赋条目）：戏剧性事件显示享年引言兜底文案
 
 ## Out of Scope
