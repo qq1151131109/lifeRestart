@@ -49,4 +49,13 @@ describe('PosterModal', () => {
     fireEvent.click(screen.getByRole('img'))
     expect(onClose).not.toHaveBeenCalled()
   })
+
+  it('calls onSwapEvent but NOT onClose when swap button clicked', () => {
+    const onClose = vi.fn()
+    const onSwapEvent = vi.fn()
+    render(<PosterModal {...baseProps} onClose={onClose} onSwapEvent={onSwapEvent} />)
+    fireEvent.click(screen.getByText('换一条事件'))
+    expect(onSwapEvent).toHaveBeenCalledOnce()
+    expect(onClose).not.toHaveBeenCalled()
+  })
 })
