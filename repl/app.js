@@ -1,33 +1,28 @@
 import { fileURLToPath } from 'url'
-import { dirname } from 'path'
+import { dirname, join } from 'path'
+import { readFile } from 'fs/promises'
+import { Life } from '../src/core/index.ts'
+import $lang from '../src/i18n/zh-cn.ts'
+import { on as $$onFn, off as $$offFn, emit as $$emitFn } from '../src/core/events.ts'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
-import { readFile } from 'fs/promises'
-import Life from '../src/modules/life.js'
-import $lang from '../src/i18n/zh-cn.js'
+const __repl_dirname = __dirname
+
 globalThis.$lang = $lang
+
+globalThis.$$on = $$onFn
+globalThis.$$off = $$offFn
+globalThis.$$event = $$emitFn
+
+globalThis.fetch = async (url) => {
+    const path = join(__repl_dirname, '..', 'public', url.replace(/^\/?/, ''))
+    const data = await readFile(path, 'utf8')
+    return { ok: true, status: 200, async json() { return JSON.parse(data) } }
+}
 
 globalThis.json = async fileName =>
     JSON.parse(await readFile(`${__dirname}/../public/data/${fileName}.json`))
-
-globalThis.$$eventMap = new Map()
-globalThis.$$event = (tag, data) => {
-    const listener = $$eventMap.get(tag)
-    if (listener) listener.forEach(fn => fn(data))
-}
-globalThis.$$on = (tag, fn) => {
-    let listener = $$eventMap.get(tag)
-    if (!listener) {
-        listener = new Set()
-        $$eventMap.set(tag, listener)
-    }
-    listener.add(fn)
-}
-globalThis.$$off = (tag, fn) => {
-    const listener = $$eventMap.get(tag)
-    if (listener) listener.delete(fn)
-}
 
 class App {
     constructor() {

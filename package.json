@@ -6,17 +6,12 @@
     "author": "Vick Scarlet <vick@syaro.io>",
     "scripts": {
         "xlsx2json": "vt transform -d public \"data/**/*.xlsx\"",
-        "dev": "vite",
-        "build": "vite build",
-        "start": "vite preview",
-        "test": "vitest",
-        "dev:next": "vite --config src-next/vite.config.ts",
-        "build:next": "vite build --config src-next/vite.config.ts",
-        "test:next": "vitest run --config src-next/vitest.config.ts",
-        "test:next:watch": "vitest --config src-next/vitest.config.ts",
-        "repl:deterministic": "node repl/deterministic.js",
-        "test:repl": "vitest run tests/core-regression.test.js",
-        "test:repl:next": "vitest run tests/core-regression-next.test.js"
+        "dev": "vite --config src/vite.config.ts",
+        "build": "vite build --config src/vite.config.ts",
+        "start": "vite preview --config src/vite.config.ts",
+        "test": "vitest run --config src/vitest.config.ts",
+        "test:watch": "vitest --config src/vitest.config.ts",
+        "repl": "tsx repl/index.js"
     },
     "devDependencies": {
         "@testing-library/jest-dom": "^6.5.0",
