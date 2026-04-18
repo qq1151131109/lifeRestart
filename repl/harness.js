@@ -9,9 +9,9 @@ const root = join(__dirname, '..')
 // On regression failure, an engineer can dump `actual` to
 // tests/fixtures/repl-seed-<seed>.actual.txt (gitignored) and diff
 // against the committed baseline for manual inspection.
-export async function runSeed(seed, script = 'repl/deterministic.js') {
+export async function runSeed(seed, script = 'repl/deterministic.js', executor = 'node') {
   return new Promise((resolve, reject) => {
-    const p = spawn('node', [script, String(seed)], { cwd: root })
+    const p = spawn(executor, [script, String(seed)], { cwd: root })
     let stdout = ''
     let stderr = ''
     p.stdout.on('data', d => stdout += d)

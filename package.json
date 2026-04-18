@@ -15,7 +15,8 @@
         "test:next": "vitest run --config src-next/vitest.config.ts",
         "test:next:watch": "vitest --config src-next/vitest.config.ts",
         "repl:deterministic": "node repl/deterministic.js",
-        "test:repl": "vitest run tests/core-regression.test.js"
+        "test:repl": "vitest run tests/core-regression.test.js",
+        "test:repl:next": "vitest run tests/core-regression-next.test.js"
     },
     "devDependencies": {
         "@testing-library/jest-dom": "^6.5.0",
@@ -27,6 +28,7 @@
         "happy-dom": "^15.7.0",
         "postcss": "^8.4.0",
         "tailwindcss": "^3.4.0",
+        "tsx": "^4.21.0",
         "typescript": "^5.6.0",
         "v-transform": "^2.2.1",
         "vite": "^8.0.3",
