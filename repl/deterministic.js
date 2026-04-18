@@ -1,6 +1,10 @@
+// Deterministic seeded REPL runner for regression fixtures.
+// Runs one full life (talents → properties → trajectory → summary → inherit)
+// with a mulberry32 PRNG keyed on seed; outputs cleaned (ANSI-stripped) text.
+// Temporary harness for Tasks 5/15 regression — deleted in Task 24.
+
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
-import { readFile } from 'fs/promises'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -9,6 +13,10 @@ globalThis.localStorage = {
   getItem: key => globalThis.localStorage[key] ?? null,
   setItem: (key, val) => { globalThis.localStorage[key] = val },
 }
+
+// app.js calls this bare during remake() when talent inherit is set.
+// In-memory run → no-op write is the right stub.
+globalThis.dumpLocalStorage = () => {}
 
 // Seeded PRNG: mulberry32
 function mulberry32(a) {
@@ -21,41 +29,65 @@ function mulberry32(a) {
   }
 }
 
-const seed = Number(process.argv[2] ?? 42)
-const rng = mulberry32(seed)
-Math.random = rng  // Override global before loading App
+const seedArg = process.argv[2] ?? '42'
+const seed = Number(seedArg)
+if (Number.isNaN(seed)) {
+  console.error(`Invalid seed: ${seedArg}`)
+  process.exit(1)
+}
+Math.random = mulberry32(seed)  // Override BEFORE loading App so core modules inherit it
 
 const { default: App } = await import('./app.js')
 
 const outputs = []
 const app = new App()
 app.io(
-  () => {},  // no input
-  (data, isRepl) => outputs.push(String(data)),
+  () => {},
+  (data) => outputs.push(String(data)),
   () => {}
 )
 await app.initial()
 
-const commands = [
-  '/remake',
-  '/random',       // random talent pick
-  '/next',         // move to property step
-  '/random',       // random property alloc
-  '/next',         // start trajectory
-]
-for (let i = 0; i < 120; i++) commands.push('/next')  // advance 120 "next"s (handles end-of-life naturally)
-commands.push('/next')  // enter summary
-commands.push('/random')  // pick random talent extend
-commands.push('/next')  // finalize
-
-for (const c of commands) {
-  const ret = app.repl(c)
-  if (!ret) continue
+function run(cmd) {
+  const ret = app.repl(cmd)
+  if (!ret) return
   if (typeof ret === 'string') outputs.push(ret)
   else if (Array.isArray(ret)) outputs.push(ret.join('\n'))
-  else outputs.push(ret.message)
+  else if (ret.message) outputs.push(ret.message)
 }
 
-// Strip ANSI color codes for stable diff
+// Fixed prologue: pick talents + allocate properties
+run('/remake')
+run('/random')   // pick 3 random talents
+run('/next')     // → PROPERTY step
+run('/random')   // random property allocation
+run('/next')     // → TRAJECTORY step (begin life)
+
+// Drive trajectory until summary is reached.
+// Life spans are bounded (max human age ~120, plus seeded early death),
+// so 500 is a generous upper bound.
+const MAX_TICKS = 500
+let reachedSummary = false
+for (let i = 0; i < MAX_TICKS; i++) {
+  const before = outputs.length
+  run('/next')
+  // summary() returns a multi-line string starting with "🎉 总评"
+  const delta = outputs.slice(before).join('\n')
+  if (delta.includes('总评')) {
+    reachedSummary = true
+    break
+  }
+}
+if (!reachedSummary) {
+  console.error(`Summary not reached within ${MAX_TICKS} trajectory ticks`)
+  process.exit(1)
+}
+
+// Summary epilogue: inherit a random talent + finalize
+run('/random')  // pick random inherit target
+run('/next')    // finalize → back to TALENT for a fresh game (remake)
+
+// Strip CSI sequences for stable cross-platform diff.
+// (OSC/charset sequences not emitted by current repl, so not stripped.)
 const clean = outputs.join('\n').replace(/\x1B\[[0-9;]*[A-Za-z]/g, '')
 process.stdout.write(clean)
