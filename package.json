@@ -9,11 +9,29 @@
         "dev": "vite",
         "build": "vite build",
         "start": "vite preview",
-        "test": "vitest"
+        "test": "vitest",
+        "dev:next": "vite --config src-next/vite.config.ts",
+        "build:next": "vite build --config src-next/vite.config.ts"
     },
     "devDependencies": {
+        "@testing-library/jest-dom": "^6.5.0",
+        "@testing-library/react": "^16.0.0",
+        "@types/react": "^18.3.0",
+        "@types/react-dom": "^18.3.0",
+        "@vitejs/plugin-react": "^6.0.1",
+        "autoprefixer": "^10.4.0",
+        "happy-dom": "^15.7.0",
+        "postcss": "^8.4.0",
+        "tailwindcss": "^3.4.0",
+        "typescript": "^5.6.0",
         "v-transform": "^2.2.1",
         "vite": "^8.0.3",
         "vitest": "^4.1.2"
+    },
+    "dependencies": {
+        "framer-motion": "^11.11.0",
+        "react": "^18.3.1",
+        "react-dom": "^18.3.1",
+        "zustand": "^5.0.0"
     }
 }
