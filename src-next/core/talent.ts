@@ -16,7 +16,7 @@ interface System {
     request(module: string): PropertyModule
     function(fn: string): { extractMaxTriggers: ExtractMaxTriggers; weightRandom: typeof weightRandom }
     clone<T>(value: T): T
-    check(prop: PropertyModule, condition: string | undefined): boolean
+    check(condition: string | undefined): boolean
 }
 
 interface TalentRate {
@@ -86,7 +86,7 @@ class Talent {
 
     check(talentId: number): boolean {
         const { condition } = this.get(talentId);
-        return this.#system.check(this.#prop, condition);
+        return this.#system.check(condition);
     }
 
     get(talentId: number): TalentMeta {
@@ -208,7 +208,7 @@ class Talent {
         description: string
     } | null {
         const { effect, condition, grade, name, description } = this.get(talentId);
-        if (condition && !this.#system.check(this.#prop, condition))
+        if (condition && !this.#system.check(condition))
             return null;
         return { effect, grade, name, description };
     }
