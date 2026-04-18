@@ -45,6 +45,7 @@ export function SummaryPage() {
 
   const handleCloseModal = useCallback(() => {
     setShowModal(false)
+    setEventIndex(0)
     clear()
   }, [clear])
 
