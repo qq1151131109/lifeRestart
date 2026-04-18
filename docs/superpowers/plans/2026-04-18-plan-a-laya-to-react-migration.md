@@ -718,14 +718,24 @@ git commit -m "test: capture repl baseline fixtures for 3 seeds"
 `src-next/core/types.ts`：
 
 ```ts
+// PropertyType mirrors property.js TYPES (35 keys). Keep 1:1.
 export const PropertyType = {
   AGE: 'AGE',
   CHR: 'CHR', INT: 'INT', STR: 'STR', MNY: 'MNY',
-  SPR: 'SPR', LIF: 'LIF', EVT: 'EVT', TLT: 'TLT',
-  HCHR: 'HCHR', HINT: 'HINT', HSTR: 'HSTR',
-  HMNY: 'HMNY', HSPR: 'HSPR', HAGE: 'HAGE',
-  SUM: 'SUM', TMS: 'TMS', CACHV: 'CACHV',
-  RTLT: 'RTLT', REVT: 'REVT',
+  SPR: 'SPR', LIF: 'LIF', TLT: 'TLT', EVT: 'EVT', TMS: 'TMS',
+  LAGE: 'LAGE', HAGE: 'HAGE',
+  LCHR: 'LCHR', HCHR: 'HCHR',
+  LINT: 'LINT', HINT: 'HINT',
+  LSTR: 'LSTR', HSTR: 'HSTR',
+  LMNY: 'LMNY', HMNY: 'HMNY',
+  LSPR: 'LSPR', HSPR: 'HSPR',
+  SUM: 'SUM',
+  EXT: 'EXT',
+  ATLT: 'ATLT', AEVT: 'AEVT', ACHV: 'ACHV',
+  CTLT: 'CTLT', CEVT: 'CEVT', CACHV: 'CACHV',
+  TTLT: 'TTLT', TEVT: 'TEVT', TACHV: 'TACHV',
+  REVT: 'REVT', RTLT: 'RTLT', RACHV: 'RACHV',
+  RDM: 'RDM',
 } as const
 
 export type PropertyTypeKey = typeof PropertyType[keyof typeof PropertyType]
@@ -743,12 +753,13 @@ export type AchievementOpportunityKey =
 export type TalentGrade = 0 | 1 | 2 | 3
 
 export interface TalentMeta {
-  id: string
+  id: number                     // talent.js line 17: Number(id)
   name: string
   description: string
   grade: TalentGrade
-  exclusive?: string[]
-  condition?: unknown
+  exclusive?: number             // flag (value 1) — not pullable in random pool
+  exclude?: string[]             // mutual-exclusion list of talent ids
+  condition?: string
   effect?: Record<string, number>
   replacement?: Record<string, number>
   status?: number
@@ -756,23 +767,24 @@ export interface TalentMeta {
 }
 
 export interface EventMeta {
-  id: string
+  id: number
   event: string
   include?: string
   exclude?: string
   NoRandom?: number
   effect?: Record<string, number>
   postEvent?: string
-  branch?: Array<[unknown, string]>
+  branch?: Array<[string, number]>  // event.js parses "cond:id" → [cond, Number(id)]
   grade?: TalentGrade
 }
 
 export interface AchievementMeta {
-  id: string
+  id: number
   name: string
   description: string
   opportunity: AchievementOpportunityKey
-  condition: unknown
+  condition: string
+  grade?: TalentGrade
   hide?: number
 }
 
@@ -810,6 +822,17 @@ export interface NextResult {
   content: TrajectoryContent[]
   isEnd: boolean
 }
+
+// property.judge() returns {prop, value, judge, grade, progress}
+export interface SummaryEntry {
+  prop: string
+  value: number
+  grade: TalentGrade
+  judge: string
+  progress: number
+}
+
+export type LifeSummary = Partial<Record<PropertyTypeKey, SummaryEntry>>
 ```
 
 - [ ] **Step 3: 写 config.ts（从 repl/app.js 的 config 逐字迁移）**

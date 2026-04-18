@@ -1,11 +1,26 @@
+// Mirrors property.js `TYPES` (35 keys). Keep 1:1 with source — Task 12
+// (property.ts port) and Task 14 (life.ts port) rely on every key here.
 export const PropertyType = {
+  // 本局
   AGE: 'AGE',
   CHR: 'CHR', INT: 'INT', STR: 'STR', MNY: 'MNY',
-  SPR: 'SPR', LIF: 'LIF', EVT: 'EVT', TLT: 'TLT',
-  HCHR: 'HCHR', HINT: 'HINT', HSTR: 'HSTR',
-  HMNY: 'HMNY', HSPR: 'HSPR', HAGE: 'HAGE',
-  SUM: 'SUM', TMS: 'TMS', CACHV: 'CACHV',
-  RTLT: 'RTLT', REVT: 'REVT',
+  SPR: 'SPR', LIF: 'LIF', TLT: 'TLT', EVT: 'EVT', TMS: 'TMS',
+  // Auto calc (low/high)
+  LAGE: 'LAGE', HAGE: 'HAGE',
+  LCHR: 'LCHR', HCHR: 'HCHR',
+  LINT: 'LINT', HINT: 'HINT',
+  LSTR: 'LSTR', HSTR: 'HSTR',
+  LMNY: 'LMNY', HMNY: 'HMNY',
+  LSPR: 'LSPR', HSPR: 'HSPR',
+  SUM: 'SUM',
+  EXT: 'EXT',
+  // Achievement total / count / grand-total / rate
+  ATLT: 'ATLT', AEVT: 'AEVT', ACHV: 'ACHV',
+  CTLT: 'CTLT', CEVT: 'CEVT', CACHV: 'CACHV',
+  TTLT: 'TTLT', TEVT: 'TEVT', TACHV: 'TACHV',
+  REVT: 'REVT', RTLT: 'RTLT', RACHV: 'RACHV',
+  // Special
+  RDM: 'RDM',
 } as const
 
 export type PropertyTypeKey = typeof PropertyType[keyof typeof PropertyType]
@@ -23,12 +38,15 @@ export type AchievementOpportunityKey =
 export type TalentGrade = 0 | 1 | 2 | 3
 
 export interface TalentMeta {
-  id: string
+  id: number
   name: string
   description: string
   grade: TalentGrade
-  exclusive?: string[]
-  condition?: unknown
+  // Flag (value `1`) meaning "not pullable in random pool". NOT the exclusion list.
+  exclusive?: number
+  // Actual mutual-exclusion list of talent ids.
+  exclude?: string[]
+  condition?: string
   effect?: Record<string, number>
   replacement?: Record<string, number>
   status?: number
@@ -36,23 +54,25 @@ export interface TalentMeta {
 }
 
 export interface EventMeta {
-  id: string
+  id: number
   event: string
   include?: string
   exclude?: string
   NoRandom?: number
   effect?: Record<string, number>
   postEvent?: string
-  branch?: Array<[unknown, string]>
+  // [conditionString, nextEventId] tuples — event.js maps `"cond:id"` → [cond, Number(id)]
+  branch?: Array<[string, number]>
   grade?: TalentGrade
 }
 
 export interface AchievementMeta {
-  id: string
+  id: number
   name: string
   description: string
   opportunity: AchievementOpportunityKey
-  condition: unknown
+  condition: string
+  grade?: TalentGrade
   hide?: number
 }
 
@@ -91,10 +111,13 @@ export interface NextResult {
   isEnd: boolean
 }
 
+// Shape of each entry in property.judge() — mirrors `{prop, value, judge, grade, progress}`.
 export interface SummaryEntry {
+  prop: string
   value: number
   grade: TalentGrade
   judge: string
+  progress: number
 }
 
 export type LifeSummary = Partial<Record<PropertyTypeKey, SummaryEntry>>
