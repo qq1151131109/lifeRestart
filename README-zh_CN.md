@@ -29,7 +29,9 @@ pnpm xlsx2json
 pnpm dev
 ```
 
-启动完成后打开浏览器访问 [http://localhost:5173](http://localhost:5173)。
+启动完成后打开浏览器访问 [http://localhost:5174](http://localhost:5174)。
+
+**技术栈：** Vite + React 18 + TypeScript + Tailwind CSS
 
 </details>
 
@@ -38,7 +40,7 @@ pnpm dev
 <br />
 
 ```bash
-node repl
+tsx repl/index.js
 ```
 
 </details>

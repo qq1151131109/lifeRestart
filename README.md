@@ -30,7 +30,9 @@ pnpm xlsx2json
 pnpm dev
 ```
 
-After the startup is complete, open a browser and visit [http://localhost:5173](http://localhost:5173).
+After the startup is complete, open a browser and visit [http://localhost:5174](http://localhost:5174).
+
+**Tech Stack:** Vite + React 18 + TypeScript + Tailwind CSS
 </details>
 
 <details>
@@ -38,7 +40,7 @@ After the startup is complete, open a browser and visit [http://localhost:5173](
 <br />
 
 ```bash
-node repl
+tsx repl/index.js
 ```
 
 </details>
