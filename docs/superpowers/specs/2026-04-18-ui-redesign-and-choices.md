@@ -4,6 +4,16 @@
 
 将 lifeRestart 的全站 UI 从深色主题改为浅色现代风格，同时引入玩家主动抉择系统：6 个人生关键节点、条件概率赌博机制、蝴蝶效应可视化、局间成长 buff、濒死危机机制，将游戏从"被动观看"升级为"有真实重量的人生决策"。
 
+## 与现有事件系统的关系（重要）
+
+`public/data/zh-cn/events.json` 已有 **1720 个事件**，其中 1539 个通过 `include`/`exclude` 字段做了属性/天赋/事件条件门控。高考、大学、创业、婚姻等人生事件**全部已存在**，且已按属性自然过滤（如 INT 高自动触发名校事件）。
+
+**设计原则：选择系统不新增事件数据，而是通过解锁/封锁事件标签来影响引擎从哪个事件子集中抽取。**
+
+- `unlockTag`：向 `eventTags` 集合注入标签，后续年龄使用该标签时优先抽取对应事件
+- `blockTag`：从 `eventTags` 移除标签，使 `include: EVT?[相关事件]` 的整条事件链失效
+- 属性效果（`effects`）仅作为辅助，用于增强已有条件事件的触发概率，幅度应保守（±1 为主）
+
 ## Feature Scope
 
 ### Part 1: UI 全面改版
@@ -167,78 +177,75 @@ interface MilestoneConfig {
 
 ## 六个节点完整配置
 
+> **设计原则**：选项的主要效果是 tag 机制（影响后续事件池），属性变化仅作辅助且保守（±1 为主，±2 封顶）。现有 events.json 已有丰富的条件门控事件，tag 机制直接激活/停用这些事件链，无需新增事件数据。
+
 ### GAOKAO · 18岁 · 高考（必定触发）
 
-| 选项 | 条件 | 效果 | 代价 |
-|------|------|------|------|
-| 技校 | INT≤4（专属，仅低智力可见） | MNY+1, CHR+1，解锁 tag:craftsman | 封锁 tag:college_life，封锁精英职场 |
-| 复读 | 无 | INT+1，下一年再触发 GAOKAO（最多2次） | 一年时间损耗 |
-| 普通大学 | 无 | SPR+1 | 无显著加成 |
-| 名校 | INT≥7 | INT+2，解锁 tag:elite_career | CHR-1（人际退化） |
-| 出国留学 | MNY≥7 | INT+1，解锁 tag:overseas | MNY-3，封锁 tag:local_network |
-| 直接打工 | 无 | MNY+2，解锁 tag:early_career | INT-1，封锁 tag:college_life |
+| 选项 | 条件 | tag 效果 | 属性效果 |
+|------|------|----------|----------|
+| 技校 | INT≤4（专属） | 解锁 tag:craftsman；移除 tag:college_life | MNY+1 |
+| 复读 | 无 | 无 | INT+1；下一年再触发 GAOKAO（最多 2 次） |
+| 普通大学 | 无 | 维持 tag:college_life | 无 |
+| 名校 | INT≥7 | 解锁 tag:elite_career | INT+1, CHR-1 |
+| 出国留学 | MNY≥7 | 解锁 tag:overseas；移除 tag:local_network | MNY-2, INT+1 |
+| 直接打工 | 无 | 解锁 tag:early_career；移除 tag:college_life | MNY+1, INT-1 |
 
 ### GRADUATION · 22岁 · 毕业去向
 
-**触发条件：** tag:college_life 在 eventTags 中（即未被封锁）。若 18岁选了考研则推迟至 24岁。
+**触发条件：** tag:college_life 在 eventTags 中。若 18岁选了考研则推迟至 24岁。
 
-`college_life` tag 初始存在于 eventTags；GAOKAO 选项"技校"或"直接打工"将其移除。
+`college_life` 初始存在于 eventTags；"技校"或"直接打工"将其移除，本节点不触发。
 
-| 选项 | 条件 | 效果 | 代价 |
-|------|------|------|------|
-| 大厂打工 | INT≥5 | MNY+2 | SPR-1, STR-1（996 内耗） |
-| 创业 | MNY≥5 | **条件概率**（见下方）| 见下方 |
-| 考研 | INT≥6 | INT+2，GRADUATION 推迟至 24岁 | MNY-1，时间损耗 |
-| 自由职业 | 无 | SPR+2, MNY+1 | 封锁 tag:corporate |
+| 选项 | 条件 | tag 效果 | 属性效果 |
+|------|------|----------|----------|
+| 大厂打工 | INT≥5 | 解锁 tag:corporate | MNY+1, SPR-1 |
+| 创业 | MNY≥5 | **条件概率**（见下方） | 见下方 |
+| 考研 | INT≥6 | 解锁 tag:academic；GRADUATION 推迟至 24岁 | INT+1, MNY-1 |
+| 自由职业 | 无 | 解锁 tag:freelance | SPR+1 |
 
-**创业成功率计算：**
-- 基础成功率 30%
-- INT≥6：+20%
-- CHR≥6：+20%
-- choiceHistory 中有 `graduation.dachangdagong`：+20%（有大厂经验）
-- 成功：MNY+4，解锁 tag:entrepreneur
-- 失败：MNY-3，SPR-2
+**创业条件概率：** 基础 30%；INT≥6 +15%；CHR≥6 +15%；choiceHistory 含 corporate +20%
+- 成功：解锁 tag:entrepreneur；MNY+2
+- 失败：MNY-2, SPR-1
 
 ### MARRIAGE · 30岁 · 婚姻（60% 概率触发）
 
-| 选项 | 条件 | 效果 | 代价 |
-|------|------|------|------|
-| 结婚 | CHR≥5 | SPR+2 | MNY-1 |
-| 闪婚 | CHR≥8 | **条件概率**（CHR 越高成功率越高） | 失败：SPR-3, MNY-1 |
-| 单身主义 | 无 | MNY+1 | SPR-1，封锁 tag:family（晚年无家庭） |
+| 选项 | 条件 | tag 效果 | 属性效果 |
+|------|------|----------|----------|
+| 结婚 | CHR≥5 | 解锁 tag:family | SPR+1, MNY-1 |
+| 闪婚 | CHR≥8 | **条件概率** | 见下方 |
+| 单身主义 | 无 | 移除 tag:family | MNY+1, SPR-1 |
 
-**闪婚成功率：** `50 + (CHR - 8) * 15`（CHR=8→50%，CHR=10→80%）
-- 成功：SPR+3
-- 失败：SPR-3, MNY-1
+**闪婚条件概率：** `50 + (CHR - 8) × 15`（CHR=8→50%，CHR=10→80%）
+- 成功：解锁 tag:family；SPR+2
+- 失败：SPR-2, MNY-1
 
 ### MIDLIFE · 40岁 · 中年危机（必定触发）
 
-| 选项 | 条件 | 效果 | 代价 |
-|------|------|------|------|
-| 继续拼搏 | 无 | MNY+2 | SPR-2, STR-1 |
-| 躺平享受 | 无 | SPR+3 | MNY-1 |
-| 转型创业 | MNY≥6 | **条件概率**（见下方） | 失败：MNY-4 |
+| 选项 | 条件 | tag 效果 | 属性效果 |
+|------|------|----------|----------|
+| 继续拼搏 | 无 | 无 | MNY+1, SPR-1 |
+| 躺平享受 | 无 | 解锁 tag:leisure | SPR+2, MNY-1 |
+| 转型创业 | MNY≥6 | **条件概率** | 见下方 |
 
-**转型创业成功率：**
-- 基础 40%（比年轻时高，有阅历）
-- choiceHistory 中有创业经验（graduation 或 midlife 上一次）：+20%
-- 成功：MNY+4，解锁 tag:late_entrepreneur
+**转型创业条件概率：** 基础 40%；choiceHistory 含 entrepreneur +20%
+- 成功：解锁 tag:late_entrepreneur；MNY+2
+- 失败：MNY-3
 
 ### RETIREMENT · 55岁 · 退休规划（必定触发）
 
-| 选项 | 条件 | 效果 | 代价 |
-|------|------|------|------|
-| 提前退休 | MNY≥8 | SPR+2，解锁 tag:leisure_senior | 放弃后续 MNY 增长 |
-| 继续工作 | 无 | MNY+2 | STR-1 |
-| 被迫退休 | MNY≤3（专属，仅低家境可见） | SPR-2 | 封锁 tag:leisure_senior |
+| 选项 | 条件 | tag 效果 | 属性效果 |
+|------|------|----------|----------|
+| 提前退休 | MNY≥8 | 解锁 tag:leisure_senior | SPR+1 |
+| 继续工作 | 无 | 无 | MNY+1, STR-1 |
+| 被迫退休 | MNY≤3（专属） | 移除 tag:leisure_senior | SPR-1 |
 
 ### TWILIGHT · 70岁 · 晚年（必定触发）
 
-**蝴蝶效应文本：** 若 30岁选了单身主义 → "你一个人走到了这里"
+**蝴蝶效应文本：** 若 choiceHistory 含 `marriage.single` → "你一个人走到了这里"
 
-| 选项 | 条件 | 效果 |
-|------|------|------|
-| 与子女同住 | tag:family 在 eventTags 中（30岁未选单身） | SPR+3 |
+| 选项 | 条件 | 属性效果 |
+|------|------|----------|
+| 与子女同住 | tag:family 在 eventTags 中 | SPR+2 |
 | 入住养老院 | MNY≥5 | SPR+1 |
 | 独居到底 | 无 | MNY+1, SPR-1 |
 
